@@ -1,0 +1,71 @@
+version: 1
+updated_at: "2026-05-25"
+collections:
+  - id: superpowers
+    title: Superpowers
+    description: "Superpowers skill collection from BaiXian's local Codex setup."
+    source: "C:\\Users\\15039\\.codex\\skills\\superpowers-*"
+    base_path: "skills/superpowers"
+    categories:
+      - id: planning
+        title: Planning
+        description: "需求澄清、计划编写、按计划执行。"
+        skills:
+          - name: superpowers-brainstorming
+            path: skills/superpowers/planning/superpowers-brainstorming
+            description: "Superpowers：在创建功能、组件、行为改动等创意性工作前使用；先澄清目标、需求和设计，再进入实现。"
+          - name: superpowers-writing-plans
+            path: skills/superpowers/planning/superpowers-writing-plans
+            description: "Superpowers：已有规格或需求、准备执行多步骤任务前使用；先写清晰实施计划再改代码。"
+          - name: superpowers-executing-plans
+            path: skills/superpowers/planning/superpowers-executing-plans
+            description: "Superpowers：当已有实施计划，需要按计划执行并在关键节点复核时使用。"
+      - id: development
+        title: Development
+        description: "TDD、系统调试、Git worktree 隔离工作区。"
+        skills:
+          - name: superpowers-test-driven-development
+            path: skills/superpowers/development/superpowers-test-driven-development
+            description: "Superpowers：实现功能或修复缺陷前使用；按测试驱动开发流程先写测试再实现。"
+          - name: superpowers-systematic-debugging
+            path: skills/superpowers/development/superpowers-systematic-debugging
+            description: "Superpowers：遇到 bug、测试失败或异常行为时使用；先系统定位根因，再提出修复。"
+          - name: superpowers-using-git-worktrees
+            path: skills/superpowers/development/superpowers-using-git-worktrees
+            description: "Superpowers：开始需要隔离的功能开发或执行实施计划前使用；通过 Git worktree 等方式建立独立工作区。"
+      - id: review-and-delivery
+        title: Review and Delivery
+        description: "完成前验证、代码审查、分支收尾。"
+        skills:
+          - name: superpowers-verification-before-completion
+            path: skills/superpowers/review-and-delivery/superpowers-verification-before-completion
+            description: "Superpowers：准备声明完成、已修复或可提交前使用；先运行验证命令并确认结果。"
+          - name: superpowers-requesting-code-review
+            path: skills/superpowers/review-and-delivery/superpowers-requesting-code-review
+            description: "Superpowers：完成任务、实现重要功能或合并前使用；用于检查成果是否符合需求。"
+          - name: superpowers-receiving-code-review
+            path: skills/superpowers/review-and-delivery/superpowers-receiving-code-review
+            description: "Superpowers：收到代码审查意见时使用；先验证技术合理性，再决定如何修改。"
+          - name: superpowers-finishing-a-development-branch
+            path: skills/superpowers/review-and-delivery/superpowers-finishing-a-development-branch
+            description: "Superpowers：实现完成且测试通过后使用；帮助选择合并、PR、清理等收尾方式。"
+      - id: orchestration
+        title: Orchestration
+        description: "并行 agent、子 agent 分工执行。"
+        skills:
+          - name: superpowers-dispatching-parallel-agents
+            path: skills/superpowers/orchestration/superpowers-dispatching-parallel-agents
+            description: "Superpowers：当有 2 个以上可并行推进、互不依赖的独立任务时使用。"
+          - name: superpowers-subagent-driven-development
+            path: skills/superpowers/orchestration/superpowers-subagent-driven-development
+            description: "Superpowers：执行包含多个独立任务的实施计划时使用，适合在当前会话中分工推进。"
+      - id: skill-maintenance
+        title: Skill Maintenance
+        description: "Superpowers 使用说明和 skill 编写维护。"
+        skills:
+          - name: superpowers-using-superpowers
+            path: skills/superpowers/skill-maintenance/superpowers-using-superpowers
+            description: "Superpowers：会话开始时使用；说明如何发现和调用 Superpowers skills。"
+          - name: superpowers-writing-skills
+            path: skills/superpowers/skill-maintenance/superpowers-writing-skills
+            description: "Superpowers：创建、修改或验证 skill 时使用；用于保证 skill 可读、可触发、可维护。"
