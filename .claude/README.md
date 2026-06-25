@@ -23,3 +23,10 @@
 **调用方式：** `/upload-skill-to-github <skill-name>`
 
 **说明：** 读取远程仓库目录结构，询问上传目标文件夹，检测是首次上传还是增量同步（通过 SHA 判断），上传 SKILL.md 后自动在目标文件夹的 README.md 中追加该 skill 的说明。
+### deploy-aliyun
+
+Deploy local code to the Aliyun server (121.196.203.3). Syncs gitignored config/secret files, runs remote git pull, executes post-deploy commands, then verifies the deployment and returns the URL. Uses mcp-ssh-manager for all remote operations.
+
+**调用方式：** `/deploy-aliyun [本地项目目录]`
+
+**说明：** 自动发现远端项目目录，检查配置文件差异（.env等），同步需要补充/修改的配置项，执行 git pull，运行部署命令，最后验证服务状态并返回访问 URL。
