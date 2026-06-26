@@ -1,118 +1,151 @@
 ---
 name: upload-skill-to-github
-description: Upload a local Claude skill to a GitHub repository. Handles first-time upload and incremental sync. Use when the user wants to publish or sync a skill from their local .claude/skills/ directory to GitHub.
+description: Upload a local Claude skill or command to GitHub. Auto-detects whether the target is a command (.claude/commands/) or a skill (.claude/skills/) and routes accordingly. Handles first-time upload and incremental sync.
 ---
 
 # Upload Skill to GitHub
 
-Upload a local Claude skill directory to GitHub, then update the repo's README with the skill description.
+Upload a local Claude command or skill to GitHub with incremental sync.
 
-## Step 0: Get skill name
+## Step 0: Detect type and locate local file
 
-The user invokes this as `/upload-skill-to-github <skill-name>`, or they may just say "upload this skill" — in that case ask which skill they want to upload.
+The user invokes this as `/upload-skill-to-github <name>`, or without a name — in that case ask which skill/command to upload.
 
-Local skill path: `C:\Users\Windows11\.claude\skills\<skill-name>\`
+Check in order:
+1. **Command**: `C:\Users\Windows11\.claude\commands\<name>.md` — if exists, type = `command`
+2. **Skill**: `C:\Users\Windows11\.claude\skills\<name>\SKILL.md` — if exists, type = `skill`
+3. Neither found → tell the user and stop.
 
-Verify the local skill exists by reading its `SKILL.md`. If not found, tell the user and stop.
+---
 
-## Step 1: Read remote repo structure
+## If type = command
 
-Run:
-```
-unset GITHUB_TOKEN
-gh api repos/baixian-white/Skills_OF_BaiXian/contents --jq '.[].name'
-```
+### Step C1: Check if remote file exists
 
-Show the user the top-level folders in the repo, then ask:
-> 请问要上传到哪个文件夹？（直接输入文件夹名，或输入 `.` 表示根目录）
-
-Wait for the user's answer before continuing. Common answer: `.claude`
-
-## Step 2: Check if skill already exists (first-time vs incremental)
-
-Check whether the target path already exists on GitHub:
-```
-unset GITHUB_TOKEN
-gh api repos/baixian-white/Skills_OF_BaiXian/contents/<target-folder>/<skill-name>/SKILL.md 2>&1
-```
-
-- If it returns a JSON object with a `sha` field → **incremental sync** (file exists, need SHA to update)
-- If it returns a 404 error → **first-time upload**
-
-## Step 3: Upload SKILL.md
-
-Read the local file and base64-encode it, then call the GitHub Contents API.
-
-**First-time upload:**
 ```bash
 unset GITHUB_TOKEN
-CONTENT=$(base64 -w 0 "C:\Users\Windows11\.claude\skills\<skill-name>\SKILL.md")
-gh api repos/baixian-white/Skills_OF_BaiXian/contents/<target-folder>/<skill-name>/SKILL.md \
+gh api repos/baixian-white/Skills_OF_BaiXian/contents/.claude/commands/<name>.md 2>&1
+```
+
+- JSON with `sha` → **incremental sync**
+- 404 → **first-time upload**
+
+### Step C2: Upload the command file
+
+**First-time:**
+```bash
+unset GITHUB_TOKEN
+CONTENT=$(base64 -w 0 "C:/Users/Windows11/.claude/commands/<name>.md")
+gh api repos/baixian-white/Skills_OF_BaiXian/contents/.claude/commands/<name>.md \
   --method PUT \
-  --field message="add <skill-name> skill" \
+  --field message="add <name> command" \
   --field content="$CONTENT" \
   --jq '.content.path'
 ```
 
-**Incremental sync** (include the existing file's SHA):
+**Incremental:**
 ```bash
 unset GITHUB_TOKEN
-SHA=$(gh api repos/baixian-white/Skills_OF_BaiXian/contents/<target-folder>/<skill-name>/SKILL.md --jq '.sha')
-CONTENT=$(base64 -w 0 "C:\Users\Windows11\.claude\skills\<skill-name>\SKILL.md")
-gh api repos/baixian-white/Skills_OF_BaiXian/contents/<target-folder>/<skill-name>/SKILL.md \
+SHA=$(gh api repos/baixian-white/Skills_OF_BaiXian/contents/.claude/commands/<name>.md --jq '.sha')
+CONTENT=$(base64 -w 0 "C:/Users/Windows11/.claude/commands/<name>.md")
+gh api repos/baixian-white/Skills_OF_BaiXian/contents/.claude/commands/<name>.md \
   --method PUT \
-  --field message="update <skill-name> skill" \
+  --field message="update <name> command" \
   --field content="$CONTENT" \
   --field sha="$SHA" \
   --jq '.content.path'
 ```
 
-If the skill directory contains additional files beyond `SKILL.md` (e.g., reference docs, scripts), upload each one the same way.
+### Step C3: Confirm
+- ✅ Uploaded/updated: link to file on GitHub
+- Whether first-time or incremental sync
 
-## Step 4: Update README.md in the target folder
+---
 
-Fetch the current README:
+## If type = skill
+
+### Step S1: Read remote repo structure
+
+```bash
+unset GITHUB_TOKEN
+gh api repos/baixian-white/Skills_OF_BaiXian/contents --jq '.[].name'
+```
+
+Show top-level folders, then ask:
+> 请问要上传到哪个文件夹？（直接输入文件夹名，或输入 `.` 表示根目录）
+
+Wait for answer. Common answer: `.claude`
+
+### Step S2: Check if skill already exists
+
+```bash
+unset GITHUB_TOKEN
+gh api repos/baixian-white/Skills_OF_BaiXian/contents/<target-folder>/<name>/SKILL.md 2>&1
+```
+
+- JSON with `sha` → **incremental sync**
+- 404 → **first-time upload**
+
+### Step S3: Upload SKILL.md
+
+**First-time:**
+```bash
+unset GITHUB_TOKEN
+CONTENT=$(base64 -w 0 "C:/Users/Windows11/.claude/skills/<name>/SKILL.md")
+gh api repos/baixian-white/Skills_OF_BaiXian/contents/<target-folder>/<name>/SKILL.md \
+  --method PUT \
+  --field message="add <name> skill" \
+  --field content="$CONTENT" \
+  --jq '.content.path'
+```
+
+**Incremental:**
+```bash
+unset GITHUB_TOKEN
+SHA=$(gh api repos/baixian-white/Skills_OF_BaiXian/contents/<target-folder>/<name>/SKILL.md --jq '.sha')
+CONTENT=$(base64 -w 0 "C:/Users/Windows11/.claude/skills/<name>/SKILL.md")
+gh api repos/baixian-white/Skills_OF_BaiXian/contents/<target-folder>/<name>/SKILL.md \
+  --method PUT \
+  --field message="update <name> skill" \
+  --field content="$CONTENT" \
+  --field sha="$SHA" \
+  --jq '.content.path'
+```
+
+If the skill directory contains additional files beyond `SKILL.md`, upload each one the same way.
+
+### Step S4: Update README.md in the target folder
+
+Fetch current README:
 ```bash
 unset GITHUB_TOKEN
 gh api repos/baixian-white/Skills_OF_BaiXian/contents/<target-folder>/README.md
 ```
 
-- If it exists: decode the `content` field (base64), append the new skill entry, re-upload with the existing `sha`.
-- If it doesn't exist: create it from scratch.
+- Exists: decode `content` (base64), append entry, re-upload with existing `sha`
+- Not exists: create from scratch
 
-README entry format to append:
+README entry format:
 ```markdown
-### <skill-name>
+### <name>
 
-<one-line description from the skill's frontmatter `description:` field>
+<one-line description from SKILL.md frontmatter `description:` field>
 
-**调用方式：** `/<skill-name> <参数（如有）>`
+**调用方式：** `/<name> <参数（如有）>`
 
-**说明：** <brief explanation of what the skill does, extracted from the SKILL.md>
+**说明：** <brief explanation extracted from SKILL.md>
 ```
 
-Upload the updated README:
-```bash
-unset GITHUB_TOKEN
-README_CONTENT=$(echo "<updated content>" | base64 -w 0)
-gh api repos/baixian-white/Skills_OF_BaiXian/contents/<target-folder>/README.md \
-  --method PUT \
-  --field message="update README for <skill-name>" \
-  --field content="$README_CONTENT" \
-  --field sha="<existing-sha-or-omit-if-new>" \
-  --jq '.content.path'
-```
+### Step S5: Confirm
+- ✅ Uploaded: link to file on GitHub
+- ✅ README updated: link to README on GitHub
+- Whether first-time or incremental sync
 
-## Step 5: Confirm
-
-Tell the user:
-- ✅ Uploaded: link to the file on GitHub
-- ✅ README updated: link to the README on GitHub
-- Whether it was a first-time upload or a sync
+---
 
 ## Notes
 
-- Always `unset GITHUB_TOKEN` before every `gh` command — a stale env var will block keyring auth
-- Active account must be `baixian-white`; if not, run `gh auth switch --user baixian-white` first
-- GitHub cannot store empty folders; at minimum `SKILL.md` must exist
-- If base64 encoding produces a warning about `\U` (unicode), it's harmless — the content is still correct
+- Always `unset GITHUB_TOKEN` before every `gh` command — a stale env var blocks keyring auth
+- Active account must be `baixian-white`; if not: `gh auth switch --user baixian-white`
+- GitHub cannot store empty folders; at minimum one file must exist in the path
+- If base64 produces a `\U` unicode warning, it's harmless — content is correct
