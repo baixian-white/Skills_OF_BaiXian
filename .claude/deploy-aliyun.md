@@ -15,6 +15,14 @@ Fall back to raw `ssh aliyun-root "..."` only if MCP tools are unavailable.
 
 ## Workflow
 
+### Step 0-A — Read deployment document
+Check for `DEPLOY.md` in the local project directory:
+```
+Test-Path <local_dir>/DEPLOY.md
+```
+- **Found**: Read the file. Use its contents to pre-fill known values (remote path, deploy method, service identifier, post-deploy commands) and skip the corresponding discovery sub-steps. Set `$FIRST_DEPLOY = false`.
+- **Not found**: Set `$FIRST_DEPLOY = true`. Proceed through all steps normally — info will be gathered and written at Step 6.
+
 ### Step 0.5 — Verify unverified runtime notes (runs once per note, skip if none)
 Scan `## Runtime Notes` at the bottom of this file for lines tagged `[UNVERIFIED]`.
 If none found, skip this step entirely.
@@ -135,6 +143,33 @@ mcp__ssh-manager__execute_command  server="ALIYUN"
     command="journalctl -u <service> -n 20 --no-pager 2>/dev/null || pm2 logs --lines 20 2>/dev/null"
   ```
 
+### Step 6 — Update and sync DEPLOY.md
+
+**If `$FIRST_DEPLOY = true`:**
+Generate `DEPLOY.md` from the template at the bottom of this file, filling in all info collected during this run. Write to `<local_dir>/DEPLOY.md`.
+
+**If `$FIRST_DEPLOY = false`:**
+Append a new row to `## Deployment History` in the existing `DEPLOY.md`:
+```
+| <YYYY-MM-DD> | <git rev-parse --short HEAD> | <git config user.name> | <brief notes or "routine deploy"> |
+```
+Keep at most 20 rows; drop the oldest if exceeded.
+
+**Both cases — sync to server:**
+```
+mcp__ssh-manager__upload_file  server="ALIYUN"  local_path=<local_dir>/DEPLOY.md  remote_path=<remote_dir>/DEPLOY.md
+```
+
+### On any error — classify and record
+
+When any step fails or produces unexpected behavior, before retrying:
+
+1. **Diagnose** the root cause from error output.
+2. **Classify**:
+   - **Server-level** — affects any project on this server (HIDS blocking, OS quirks, container runtime behavior, network). Add a new `[UNVERIFIED]` line to `## Runtime Notes` in **this skill file** with a `verify:` command. It will be auto-validated on the next run via Step 0.5.
+   - **Project-level** — specific to this codebase (startup crash, bad env var, migration failure, config mismatch). Add a row to `## Known Issues` in **DEPLOY.md**. Step 6 will sync it to the server.
+3. **Resolve** and continue deployment.
+
 ---
 
 ## Runtime Notes
@@ -143,8 +178,48 @@ mcp__ssh-manager__execute_command  server="ALIYUN"
 ### 2026-06-25 — trustailab-reimbursement (121.196.203.3)
 - [VERIFIED] **SSH drops compound commands** (`;` `&&` `|`) → AliYunDun HIDS agent detects shell metacharacters as command injection and kills the session. Wrap all multi-step logic in `bash -c '...'` as a single SSH call | verify: `ssh aliyun-root "echo a && echo b"` fails; `ssh aliyun-root "bash -c 'echo a && echo b'"` succeeds
 - [VERIFIED] **Server uses Podman not Docker** (121.196.203.3, v4.9.4-rhel) → `docker` is an alias for podman on this specific instance. Always detect first: `docker info 2>&1 | grep -i podman`. If podman: use `podman` commands directly; `podman-compose up -d` does NOT auto-replace running containers — use `podman kill + rm + run` manually
-- [UNVERIFIED] **git remote is HTTPS** → run `git remote set-url origin git@github.com:...` before pull | verify: `ssh aliyun-root "git -C /opt/trustailab-reimbursement remote get-url origin"`
-- [UNVERIFIED] **git pull conflicts with local files** → only remove the specific conflicting file(s), never `git clean -fd` (deletes .env) | verify: `ssh aliyun-root "git -C /opt/trustailab-reimbursement status --short"`
-- [UNVERIFIED] **docker build must run in background** → use `nohup docker compose build > /tmp/build.log 2>&1 &` | verify: try `ssh aliyun-root "sleep 5 && echo ok"` — if it drops, SSH timeout is short
-- [UNVERIFIED] **podman container name conflict on re-deploy** → `podman kill <name> && podman rm <name>` before `podman run` | verify: `ssh aliyun-root "podman ps -a --filter name=trustailab"`
-- [UNVERIFIED] **pip slow (no mirror)** → add `-i https://mirrors.aliyun.com/pypi/simple/` to Dockerfile pip install | verify: check Dockerfile for mirror config
+- [VERIFIED] **podman container name conflict on re-deploy** → container `trustailab-reimbursement_app_1` stays running; use `podman restart <name>` for incremental deploy (kill+rm only needed for full rebuild)
+- [VERIFIED] **pip slow (no mirror)** → Dockerfile line 4 has no `-i` mirror; add `-i https://mirrors.aliyun.com/pypi/simple/` to speed up image rebuilds
+- [VERIFIED] **podman restart SIGTERM timeout** → container ignores SIGTERM, SIGKILL after 10s; add `stop_signal: SIGKILL` or `stop_grace_period: 1s` to docker-compose.yml | verify: `ssh aliyun-root "bash -c 'podman restart trustailab-reimbursement_app_1'"` and check for SIGTERM warning
+
+---
+
+## DEPLOY.md Template
+Use this template on first deploy. Fill all fields from info gathered during this run.
+
+```markdown
+# Deployment Record — <project-name>
+
+## Project
+- **Repo**: <git remote URL>
+- **Local path**: <local dir>
+- **Remote path**: <server path>
+- **Server**: <IP>
+
+## Runtime Environment
+- **OS**: <uname -r>
+- **Deploy method**: <podman-compose / docker-compose / systemd / pm2 / bare-process / static>
+- **Service identifier**: <container name / unit name / pm2 app name>
+- **Config file**: <compose / service / ecosystem file path>
+
+## Ports & URLs
+- **Port**: <internal port>
+- **URL**: <public URL>
+- **Reverse proxy config**: <path, or N/A>
+
+## Config Files
+| File | Last synced | Keys (no values) |
+|------|-------------|-----------------|
+
+## Post-Deploy Commands
+1. <command>
+
+## Known Issues
+| Date | Description | Resolution |
+|------|-------------|------------|
+
+## Deployment History
+| Date | Commit | Deployer | Notes |
+|------|--------|----------|-------|
+| <date> | <hash> | <name> | Initial deploy |
+```
