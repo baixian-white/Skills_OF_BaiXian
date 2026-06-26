@@ -30,3 +30,19 @@ Deploy local code to the Aliyun server (121.196.203.3). Syncs gitignored config/
 **调用方式：** `/deploy-aliyun [本地项目目录]`
 
 **说明：** 自动发现远端项目目录，检查配置文件差异（.env等），同步需要补充/修改的配置项，执行 git pull，运行部署命令，最后验证服务状态并返回访问 URL。
+
+### deploy-aliyun
+
+Deploy local code to the Aliyun server (121.196.203.3). Syncs gitignored config/secret files, runs remote git pull, executes post-deploy commands, then verifies the deployment and returns the URL.
+
+**调用方式：** `/deploy-aliyun [本地项目目录]`
+
+**说明：** 自动发现远端项目路径，对比并同步 .env 等配置文件，执行 git pull 和重启服务，最终返回可访问 URL。
+
+### skill-retro
+
+Record lessons learned from a skill execution and update the skill file. Appends UNVERIFIED notes that get verified on next invocation.
+
+**调用方式：** `/skill-retro <skill-name>`
+
+**说明：** 提示用户总结本次 skill 执行中的问题，追加到 skill 文件的 Runtime Notes 区，标记为 UNVERIFIED 供下次验证。
