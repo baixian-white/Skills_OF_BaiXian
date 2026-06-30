@@ -21,3 +21,13 @@ Manage reusable local environment configuration for cloned projects, including `
 **Path:** `.codex/skills/env-config-vault/`
 
 **Safety:** This skill is explicit-invocation only and must not upload or sync local vault data such as `~/.codex/env-config-vault/vault.json`.
+
+### upload-skill-to-github
+
+Upload or sync a local Codex or Claude skill/command to the GitHub repo `baixian-white/Skills_OF_BaiXian`.
+
+**Invocation:** `$upload-skill-to-github`
+
+**Path:** `.codex/skills/upload-skill-to-github/`
+
+**Maintenance:** For Codex skills, also update this `.codex/skills/README.md` index during sync.
