@@ -1,0 +1,5 @@
+{
+  "api_key": "sk-replace-me",
+  "base_url": "https://mianyunai.com/v1",
+  "model": "gpt-image-2"
+}
