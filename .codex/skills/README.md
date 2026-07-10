@@ -31,3 +31,11 @@ Upload or sync a local Codex or Claude skill/command to the GitHub repo `baixian
 **Path:** `.codex/skills/upload-skill-to-github/`
 
 **Maintenance:** For Codex skills, also update this `.codex/skills/README.md` index during sync.
+
+### reliable-batch-image-generation
+
+Use when generating one or many images through an unstable OpenAI-compatible gpt-image endpoint, with retries, PNG validation, atomic saves, and resumable batches.
+
+**Invocation:** $reliable-batch-image-generation
+
+**Path:** `.codex/skills/reliable-batch-image-generation/`
