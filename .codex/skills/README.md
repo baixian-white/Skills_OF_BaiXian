@@ -32,10 +32,10 @@ Upload or sync a local Codex or Claude skill/command to the GitHub repo `baixian
 
 **Maintenance:** For Codex skills, also update this `.codex/skills/README.md` index during sync.
 
-### reliable-batch-image-generation
+### mianyunai-image
 
-Use when generating one or many images through an unstable OpenAI-compatible gpt-image endpoint, with retries, PNG validation, atomic saves, and resumable batches.
+Use when generating or editing one or many images through an unstable image API relay, especially when requests intermittently return 520, 524, 429, timeouts, empty data, corrupt images, model-route mismatches, or when a long batch must resume without repeating completed work.
 
-**Invocation:** $reliable-batch-image-generation
+**Invocation:** `$mianyunai-image`
 
-**Path:** `.codex/skills/reliable-batch-image-generation/`
+**Path:** `.codex/skills/mianyunai-image/`
