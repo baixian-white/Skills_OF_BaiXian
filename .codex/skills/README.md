@@ -39,3 +39,13 @@ Use when generating or editing one or many images through an unstable image API 
 **Invocation:** `$mianyunai-image`
 
 **Path:** `.codex/skills/mianyunai-image/`
+
+### creating-ppt-image-prompts
+
+Use when a user provides a PPT outline, report, manuscript, slide list, or presentation content and needs a slide-by-slide image-generation prompt deck, including section pages, consistent style profiles, title/no-title modes, Chinese text controls, layout groups, and batch-generation-ready Markdown.
+
+**Invocation:** `$creating-ppt-image-prompts`
+
+**Path:** `.codex/skills/creating-ppt-image-prompts/`
+
+**Safety:** Preserve generated original images; do not translate, resize, crop, stretch, pad, or extend them. Re-generate noncompliant pages instead.
