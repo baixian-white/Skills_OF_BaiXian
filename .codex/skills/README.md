@@ -49,3 +49,11 @@ Use when a user provides a PPT outline, report, manuscript, slide list, or prese
 **Path:** `.codex/skills/creating-ppt-image-prompts/`
 
 **Safety:** Preserve generated original images; do not translate, resize, crop, stretch, pad, or extend them. Re-generate noncompliant pages instead.
+
+### image-slides-to-pptx
+
+Use when numbered PNG or JPEG files must be combined into a PowerPoint deck, especially for full-slide image decks, editable title overlays, reusable theme profiles, section decorations, page numbers, 16:9 output, or PPTX integrity and image-mapping verification.
+
+**Invocation:** `$image-slides-to-pptx`
+
+**Path:** `.codex/skills/image-slides-to-pptx/`
