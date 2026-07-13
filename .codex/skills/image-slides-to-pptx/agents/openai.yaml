@@ -1,0 +1,4 @@
+interface:
+  display_name: "Image Slides to PPTX"
+  short_description: "Convert numbered slide images into a validated PowerPoint deck"
+  default_prompt: "Use $image-slides-to-pptx to convert numbered slide images into a validated PowerPoint deck."
