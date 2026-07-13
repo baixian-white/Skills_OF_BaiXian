@@ -1,0 +1,4 @@
+interface:
+  display_name: "Creating PPT Image Prompts"
+  short_description: "Turn PPT outlines into consistent slide-image prompt decks"
+  default_prompt: "Use $creating-ppt-image-prompts to convert this presentation outline into a validated slide-by-slide image-generation prompt deck."
